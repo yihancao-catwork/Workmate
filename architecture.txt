@@ -1,0 +1,205 @@
+## 5. 推荐项目结构
+
+```text
+workmate_py_demo/
+  main.py
+  requirements.txt
+  README.md
+  settings.json
+  assets/
+    poses/
+      resting/
+        loaf.png
+      walking/
+        walk_01.png
+        walk_02.png
+        walk_03.png
+  app/
+    __init__.py
+    constants.py
+    settings.py
+    state_machine.py
+    asset_loader.py
+    pet_window.py
+    tray.py
+    controller.py
+```
+
+各文件职责：
+
+- `main.py`：程序入口。
+- `requirements.txt`：Python 依赖清单。
+- `settings.json`：本地持久化设置。
+- `assets/`：宠物图片资源。
+- `constants.py`：统一常量配置。
+- `settings.py`：读取和保存设置。
+- `state_machine.py`：定义状态和状态切换逻辑。
+- `asset_loader.py`：加载 PNG 资源。
+- `pet_window.py`：透明悬浮窗、拖拽、绘制。
+- `tray.py`：系统托盘与右键菜单。
+- `controller.py`：把窗口、状态机、计时器和移动逻辑串起来。
+
+## 6. 依赖清单
+
+最小依赖只保留一个：
+
+```text
+PySide6>=6.7,<7
+```
+
+对应 `requirements.txt`：
+
+```text
+PySide6>=6.7,<7
+```
+
+说明：
+
+- 第一版不要引入 `pywin32`。
+- 第一版不要引入图像处理库。
+- 第一版不要引入数据库。
+
+先保证 demo 足够轻，易安装，易运行。
+
+## 7. 状态设计
+
+第一版只保留三种状态：
+
+```text
+PetState
+  - RESTING
+  - WALKING
+  - DRAGGED
+```
+
+状态职责：
+
+- `RESTING`：显示静态姿势图，不自动切换帧。
+- `WALKING`：按固定帧率播放 walking 帧，并水平移动窗口。
+- `DRAGGED`：用户拖拽时暂停自动运动。
+
+第一版的简化切换规则：
+
+- 启动时先进入 `RESTING`。
+- 定时器触发后进入 `WALKING`。
+- 用户按住左键拖拽时进入 `DRAGGED`。
+- 松开鼠标后回到 `RESTING` 或 `WALKING`。
+
+## 8. 资源文件命名约定
+
+建议从一开始就采用稳定命名，避免后面重构资源路径。
+
+目录约定：
+
+```text
+assets/
+  poses/
+    resting/
+      loaf.png
+    walking/
+      walk_01.png
+      walk_02.png
+      walk_03.png
+```
+
+命名规则：
+
+- 全部使用小写英文文件名。
+- 统一使用 PNG。
+- 动画帧使用顺序命名，例如 `walk_01.png`、`walk_02.png`、`walk_03.png`。
+- 所有图片使用透明背景。
+- 所有图片保持一致画布尺寸，建议 `512 x 512`。
+- 角色主体位置尽量一致，减少动画抖动。
+
+最小资源要求：
+
+- 1 张 resting 图
+- 3 张 walking 图
+
+## 9. 本地设置设计
+
+第一版只需要保存最少配置：
+
+```json
+{
+  "window_x": 120,
+  "window_y": 800,
+  "scale_percent": 100
+}
+```
+
+设置项含义：
+
+- `window_x`：窗口左上角 X 坐标。
+- `window_y`：窗口左上角 Y 坐标。
+- `scale_percent`：宠物显示缩放比例。
+
+后续可扩展但第一版先不加：
+
+- 提醒间隔
+- 宠物名称
+- 默认资源包 ID
+- 行走速度
+- 对话文案
+
+
+## 11. 运行方式
+
+推荐使用 PowerShell：
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python main.py
+```
+
+建议的 Python 版本：
+
+- Python 3.11
+- 或 Python 3.12
+
+首次运行前需要准备好：
+
+- `assets/poses/resting/loaf.png`
+- `assets/poses/walking/walk_01.png`
+- `assets/poses/walking/walk_02.png`
+- `assets/poses/walking/walk_03.png`
+
+## 12. 开发顺序
+
+建议按下面顺序推进：
+
+1. 先跑通透明窗口和单张 PNG 显示。
+2. 再接入 walking 帧动画。
+3. 再加拖拽与位置保存。
+4. 再加托盘菜单和退出逻辑。
+5. 最后再补状态切换和更自然的移动行为。
+
+这样可以保证每一步都可验证，不会一开始把复杂度拉太高。
+
+## 13. 第二阶段扩展方向
+
+当最小 demo 跑通后，可以继续做这些扩展：
+
+- 增加 `transitioning` 状态
+- 增加对话气泡
+- 增加提醒系统
+- 增加出门系统
+- 增加资源包扫描
+- 增加屏幕边界或任务栏邻近移动范围
+- 增加左右镜像
+- 增加更多姿势图
+
+第二阶段仍然可以继续用 Python 推进，不必马上切换语言。
+
+需要自行实现的内容：
+
+- Python + PySide6 的窗口层
+- Windows 的托盘与交互层
+- 本地设置保存方式
+- Demo 资源加载逻辑
+
+## 15. 许可证边界
+
+MIT License
